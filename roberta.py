@@ -14,14 +14,13 @@ mapping = {
 }
 
 
-with torch.no_grad():
-    # prepare the input
-    inputs = tokenizer.batch_encode_plus([text], return_tensors='pt', padding=True).input_ids.cuda()
-    # inference
-    result = model(inputs).logits.cpu().numpy()[0]
+def roberta_toxicity_classify(text):
+    with torch.no_grad():
+        # prepare the input
+        inputs = tokenizer.batch_encode_plus([text], return_tensors='pt', padding=True).input_ids.cuda()
+        # inference
+        result = model(inputs).logits.cpu().numpy()[0]
 
-    result = mapping[result.argmax()]
+        result = mapping[result.argmax()]
+        return {"label": result}
 
-    print("法克油")
-    print(text)
-    print(result)
