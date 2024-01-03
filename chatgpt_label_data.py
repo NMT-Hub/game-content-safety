@@ -117,8 +117,10 @@ async def label_toxity_text(text: str) -> str:
     text,
     ]
     explanations, labels = await label_toxity_texts(input_texts)
-    return explanations[-1], labels[-1]
-
+    return {
+        "label": labels[-1],
+        "explanation": explanations[-1],
+    }
 
 async def main():
     num = 0

@@ -16,7 +16,7 @@ lang_id_small_model = fasttext.load_model('./models/lid.176.ftz')
 text = "Farkle oil"
 
 mapping = { 
-    0: 'natural',
+    0: 'compliant',
     1: 'toxic'
 }
 
@@ -40,7 +40,7 @@ async def roberta_toxicity_classify(text):
         result = model(inputs).logits.cpu().numpy()[0]
 
         result = mapping[result.argmax()]
-        return {"label": result, "translated": text}
+        return {"label": result, "explanation": "Toxicity content"}
 
 
 if __name__ == "__main__":

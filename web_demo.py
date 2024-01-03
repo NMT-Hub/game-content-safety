@@ -1,3 +1,4 @@
+import openai
 import gradio as gr
 from chatgpt_label_data import label_toxity_text
 from baidu import get_text_censor
@@ -6,8 +7,10 @@ from roberta import roberta_toxicity_classify
 
 async def greet(text, model, *args, **kwargs):
     if model == "gpt3.5-turbo":
-        explanation, label = await label_toxity_text(text)
-        return {"label": label, "explanation": explanation}, description
+        try:
+            return await label_toxity_text(text), description
+        except openai.BadRequestError:
+            return await roberta_toxicity_classify(text), "natural: 合规 toxity: 不合规"
     elif model == "finetuned mT5":
         return {"label": "unclear", "explanation": "暂不支持"}, description
     elif model == "Baidu API":
