@@ -8,10 +8,12 @@ def main():
     url = "https://aip.baidubce.com/rest/2.0/solution/v1/text_censor/v2/user_defined?access_token=" + get_access_token()
     
     payload={
-        "text": "搏一搏单车变摩托，赶紧来吧，可直接加微f-fak-fas",
-        "text": "我认为Player16195000005提问的Q5答案是A:1.5公里",
-        "text": "我解散了所有部隊……這樣你就可以攻擊我的別墅",
-        "text": "法克油"
+        # "text": "搏一搏单车变摩托，赶紧来吧，可直接加微f-fak-fas",
+        # "text": "我认为Player16195000005提问的Q5答案是A:1.5公里",
+        # "text": "我解散了所有部隊……這樣你就可以攻擊我的別墅",
+        "text": "法克油",
+        # "text": "who is that? new porn star?",
+        # "text": "宝石便宜卖了,加v 线下私聊"
     }
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',

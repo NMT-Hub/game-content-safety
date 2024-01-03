@@ -1,26 +1,21 @@
 SYSTEM_PROMPT = """
-I want to perform content safety recognition and filtering for the speech in the game chat system. The main requirements are as follows.
+Your role is to identify and categorize sensitive information in various forms of communication within a gaming environment. You will focus on detecting inappropriate comments, such as abusive language, racial discrimination, and references to inappropriate content like gambling or drugs. Additionally, you'll identify discussions about cheating, selling or buying game resources or accounts, unauthorized channel transactions, and soliciting for other games. Your goal is to maintain a safe and respectful gaming community by flagging these types of content across different communication mediums like alliance chat, world chat, private messages, emails, game nicknames, avatars, alliance nicknames, and alliance announcements.
 
-Speech Characteristics: Include but are not limited to insults, racial discrimination, inappropriate remarks related to pornography/gambling/drugs, etc. Handle flexibly according to the specific conversation context.
-Spreading Cheating Speech
+Categories Divided: 
+- compliance: No toxity contents. Normal communication among players.
+- pornography: Sending pornographic remarks or links to pornographic information.
+- violence: Sending violent remarks.
+- toxity: Sending abusive remarks.
+- politics: Sending politically sensitive remarks.
+- advertising: Sending promotional messages unrelated to the game, as well as related social media links.
+- boycotting games: Encouraging everyone not to play this game, such as saying that this game is a scam, saying that this game is a waste of time, inciting everyone to play other games, etc.
+- cheating: Characteristics of the Statements: Including but not limited to making statements in games such as 'I am a shill', 'I will use scripts', 'I can hack accounts', and other related cheating statements."
+- buying and selling resources: Characteristics of the Statements: Including but not limited to making statements in games such as 'I am selling resources', 'I am buying resources', 'I am selling accounts', 'I am buying accounts', 'Base alcohol $1/M, gems $1/M, contact xxx offline for private chat', and so on." and other related statements about buying and selling resources. 
+- buying and selling account: Discussions Related to Buying and Selling Accounts: For example, 'This account for sale at $500, contact xxx offline for private chat', and so on.
+- non-official recharging: Recharging Through Non-Official Channels: Statements involving 'purchasing gift packs on behalf', 'buying gift packs at a low price', and other similar remarks, promoting recharging through non-official channels, third-party recharging, etc.
+- diverting players to other games: Involving Invitations to Other Games, Inviting Players to Join Other Games (For the Purpose of Redirecting Players).
 
-Speech Characteristics: Include but are not limited to releasing statements like "I'm a shill" or "I use scripts" or "I can hack accounts" in games, among other cheating-related remarks.
-Speech Related to Buying and Selling Resources
-
-Speech Characteristics: For example, statements like "Base liquor $1/M, gems $1/M, contact xxx for offline private chat", etc.
-Speech Related to Buying and Selling Accounts
-
-Speech Characteristics: For example, statements like "This account for sale at $500, contact xxx for offline private chat", etc.
-Speech about Recharging via Non-official Channels
-
-Speech Characteristics: Speech involving "buying gift packages on behalf", "buying gift packages at low prices", etc., spreading recharging through non-official channels, proxy recharging, etc.
-Washing People/Draining Traffic
-
-Speech Characteristics: Involves inviting information for other games, inviting players to join other games (draining traffic).
-
-Categories Divided: Compliant, Incendiary Speech, Boycotting the Game, Washing People/Draining Traffic, Pornography, Violence, Politics, Advertising, Spreading Cheating Speech, Speech about Buying and Selling Resources, Speech about Buying and Selling Accounts, Speech about Recharging via Non-official Channels.
-
-Please label the given sentences with specific categories
+Please label the given multilingual sentences with specific categories with the given categories with detailed explanations. 
 """
 
 import sys
@@ -50,71 +45,86 @@ async def label_toxity_texts(texts: List[str]) -> List[str]:
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": """
 1. yeah , they have t5 bro
-2. You're so bad, uninstall the game, loser! 
-3. Everyone should stop playing this game, it's a total scam!
-4. Why waste your time here? Everyone's moving to [another platform or game].
-5. pornhub.com
-6. Do you dare to come here and I will kill you?
-7. Israel should destroy Palestine
-8. Visit [url] to buy cheap in-game currency fast and safely!
-9. Just use this glitch to get unlimited coins, it's easy and they'll never catch you
-10. Selling epic weapon for 50 bucks, legit and fast delivery.
-11. Anyone selling their account? Need a new one with good stats.
-12. Get double the diamonds for half the price! PM me for non-official top-up.
+2. pornhub.com
+3. Do you dare to come here and I will kill you?
+4. Israel should destroy Palestine
+5. 搏一搏单车变摩托，赶紧来吧，可直接加微f-fak-fas
+6. Cùng nhau nổ tung màn hình và lấn át máy chủ trò chơi
+7. Todos deveriam parar de jogar este jogo, é uma farsa total!
+8. the script can directly complete the level.
+9. 宝石便宜卖了,加v 线下私聊
+10. power leveling services, for account purchases message me privately
+11. Add me for an 80% discount on top-up vouchers 
+12. Why waste your time here? Everyone's moving to LOL
+13. 🤩🤩🤩👌☕
+14. hlo
+15. go fuck yourself
 """
          },
         {
             "role": "assistant",
             "content": """
-1. Compliant
-2. Incendiary Speech
-3. Boycotting the Game
-4. Washing People/Draining Traffic
-5. Pornography
-6. Violence
-7. Politics
-8. Advertising
-9. Spreading Cheating Speech
-10. Speech about Buying and Selling Resources
-11. Speech about Buying and Selling Accounts
-12. Speech about Recharging via Non-official Channels.
+1. Normal game discussion. 't5 bro' Likely referring to some aspect of the game. Labeled as 'compliant'.
+2. pornographic website. Labeled as 'pornography'
+3. Threatening to kill the other person. Labeled as 'violence'.
+4. Politically sensitive comments. Labeled as 'politics'.
+5. Involving private message promotion advertisements. Labeled as 'advertising'.
+6. Inciting players to take actions that destroy the game. Labeled as 'boycotting games'
+7. Encouraging everyone not to play this game is part of a speech advocating for boycotting the game. Labeled as 'boycotting games'.
+8. Cheating with scripts. Labeled as 'cheating'.
+9. Selling gems. Labeled as 'buying and selling resources'.
+10. Selling accounts. Labeled as 'buying and selling account'.
+11. Recharging through non-official channels. Labeled as 'non-official recharging'.
+12. Saying playing this game is a waste of time, inciting everyone to play LOL instead. Labeled as 'diverting players to other games'.
+13. Emoji. Labeled as 'compliant'.
+14. Greating. Labeled as 'compliant'.
+15. Abusive remarks. Labeled as 'toxity'.
 """
         },
     {"role": "user", "content": "\n".join([f"{i+1}. {x}" for i, x in enumerate(texts)])},
     ]
     chat_completion_resp = await client.chat.completions.create(
-        messages=messages, timeout=30, model=DEPLOYMENT_ID, temperature=0.0
+        messages=messages, timeout=30, model=DEPLOYMENT_ID, temperature=0.0,
     )
     response = chat_completion_resp.choices[0].message.content
 
     if not response.endswith("\n"):
         response += "\n"
-    labels = re.findall(r"\d+\.\s*(.*)\n", response, re.MULTILINE)
 
-    if len(labels) != len(texts):
+    explanations = re.findall(r"(\d+\..*)\n", response, re.MULTILINE)
+    labels = []
+    for e in explanations:
+        m = re.match(r"\d+\..*Labeled as '(.*)'\.*", e)
+        if m:
+            labels.append(m.group(1))
+        else:
+            labels.append("unclear")
+
+    if len(labels) != len(texts) or len(explanations) != len(texts):
         logger.warning(f"ChatGPT failed: {response}")
-        return ["UNK"] * len(texts)
-    return labels
+        return ["UNK"] * len(texts), ["UNK"] * len(texts)
+    return explanations, labels
 
 
 async def main():
     num = 0
     batch = []
+    batch_size = 15
 
     # for line in tqdm(fileinput.input("./data/data.txt")):
     for line in tqdm(sys.stdin):
         num += 1
         batch.append(line.strip())
-        if num % 10 == 0:
-            labels = await label_toxity_texts(batch)
-            for t, l in zip(batch, labels):
-                print(f"{t}\t{l}")
+        if num % batch_size == 0:
+            explanations, labels = await label_toxity_texts(batch)
+            for t, e, l in zip(batch, explanations, labels):
+                print(f"{l}\t{t}\t{e}")
             batch = []
 
     if batch:
-        labels = await label_toxity_texts(batch)
-        for t, l in zip(batch, labels):
-            print(f"{t}\t{l}")
+        explanations, labels  = await label_toxity_texts(batch)
+        for t, e, l in zip(batch, explanations, labels):
+            print(f"{l}\t{t}\t{e}")
         
 if __name__ == "__main__":
     import asyncio
