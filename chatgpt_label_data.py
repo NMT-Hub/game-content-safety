@@ -92,18 +92,32 @@ async def label_toxity_texts(texts: List[str]) -> List[str]:
         response += "\n"
 
     explanations = re.findall(r"(\d+\..*)\n", response, re.MULTILINE)
+    if len(explanations) != len(texts):
+        explanations = re.split(r"[\n\r]+", response.strip())
     labels = []
     for e in explanations:
-        m = re.match(r"\d+\..*Labeled as '(.*)'\.*", e)
+        m = re.match(r".*Labeled as '(.*)'\.*", e)
         if m:
             labels.append(m.group(1))
         else:
             labels.append("unclear")
 
+    explanations = [re.sub(r"\d+\.", "", e).strip() for e in explanations]
+
     if len(labels) != len(texts) or len(explanations) != len(texts):
         logger.warning(f"ChatGPT failed: {response}")
         return ["UNK"] * len(texts), ["UNK"] * len(texts)
     return explanations, labels
+
+
+async def label_toxity_text(text: str) -> str:
+    input_texts = [
+    "k gimme a sec to see if magician got last battle thirst prize",
+    "win did u finish all smuggling event?",
+    text,
+    ]
+    explanations, labels = await label_toxity_texts(input_texts)
+    return explanations[-1], labels[-1]
 
 
 async def main():
