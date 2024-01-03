@@ -1,5 +1,6 @@
 import gradio as gr
 from chatgpt_label_data import label_toxity_text
+from baidu import get_text_censor
 
 
 async def greet(text, model):
@@ -9,7 +10,7 @@ async def greet(text, model):
     elif model == "finetuned mT5":
         return {"label": "unclear", "explanation": "暂不支持"}
     elif model == "Baidu API":
-        return {"label": "unclear", "explanation": "暂不支持"}
+        return await get_text_censor(text)
     elif model == "Roberta":
         return {"label": "unclear", "explanation": "暂不支持"}
     else:
