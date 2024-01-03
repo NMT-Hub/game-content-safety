@@ -13,7 +13,7 @@ async def greet(text, model, *args, **kwargs):
     elif model == "Baidu API":
         return await get_text_censor(text), ""
     elif model == "Roberta":
-        return roberta_toxicity_classify(text), "natural: 合规 toxity: 不合规"
+        return await roberta_toxicity_classify(text), "natural: 合规 toxity: 不合规"
     else:
         return {"label": "unclear", "explanation": "暂不支持"}, ""
 
@@ -69,4 +69,4 @@ demo = gr.Interface(
 
 
 if __name__ == "__main__":
-    demo.launch(show_api=True, share=True)
+    demo.launch(show_api=True, share=True, server_name='0.0.0.0')
