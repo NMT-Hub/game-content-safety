@@ -2,7 +2,7 @@ SYSTEM_PROMPT = """
 Your role is to identify and categorize sensitive information in various forms of communication within a gaming environment. You will focus on detecting inappropriate comments, such as abusive language, racial discrimination, and references to inappropriate content like gambling or drugs. Additionally, you'll identify discussions about cheating, selling or buying game resources or accounts, unauthorized channel transactions, and soliciting for other games. Your goal is to maintain a safe and respectful gaming community by flagging these types of content across different communication mediums like alliance chat, world chat, private messages, emails, game nicknames, avatars, alliance nicknames, and alliance announcements.
 
 Categories Divided: 
-- natural: No toxity contents. Normal communication among players.
+- compliant: No toxity contents. Normal communication among players.
 - pornography: Sending pornographic remarks or links to pornographic information.
 - violence: Sending violent remarks.
 - toxity: Sending abusive remarks.
@@ -64,7 +64,7 @@ async def label_toxity_texts(texts: List[str]) -> List[str]:
         {
             "role": "assistant",
             "content": """
-1. Normal game discussion. 't5 bro' Likely referring to some aspect of the game. Labeled as 'natural'.
+1. Normal game discussion. 't5 bro' Likely referring to some aspect of the game. Labeled as 'compliant'.
 2. pornographic website. Labeled as 'pornography'
 3. Threatening to kill the other person. Labeled as 'violence'.
 4. Politically sensitive comments. Labeled as 'politics'.
@@ -123,7 +123,7 @@ async def label_toxity_text(text: str) -> str:
 async def main():
     num = 0
     batch = []
-    batch_size = 15
+    batch_size = 20
 
     # for line in tqdm(fileinput.input("./data/data.txt")):
     for line in tqdm(sys.stdin):

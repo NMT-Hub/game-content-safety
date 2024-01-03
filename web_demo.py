@@ -13,7 +13,7 @@ async def greet(text, model, *args, **kwargs):
     elif model == "Baidu API":
         return await get_text_censor(text), ""
     elif model == "Roberta":
-        return roberta_toxicity_classify(text), "natural: 正常 toxity: 毒性"
+        return roberta_toxicity_classify(text), "natural: 合规 toxity: 不合规"
     else:
         return {"label": "unclear", "explanation": "暂不支持"}, ""
 
@@ -29,7 +29,7 @@ json_output = gr.JSON(label="检测结果")
 
 description = """
 ### 分类说明: 
-- 正常(natural)：不含有毒性内容。玩家之间的正常交流。
+- 合规(compliant)：不含有毒性内容。玩家之间的正常交流。
 - 色情(pornography)：发送色情评论或色情信息的链接。
 - 暴力(violent)：发送暴力言论。
 - 毒性(toxity)：发送辱骂性言论。
