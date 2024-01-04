@@ -1,6 +1,6 @@
 import openai
 import gradio as gr
-from chatgpt_label_data import label_toxity_text
+from chatgpt_label_data import label_toxicity_text
 from baidu import get_text_censor
 from roberta import roberta_toxicity_classify
 
@@ -8,15 +8,15 @@ from roberta import roberta_toxicity_classify
 async def greet(text, model, *args, **kwargs):
     if model == "gpt3.5-turbo":
         try:
-            return await label_toxity_text(text), description
+            return await label_toxicity_text(text), description
         except openai.BadRequestError:
-            return await roberta_toxicity_classify(text), "natural: 合规 toxity: 不合规"
+            return await roberta_toxicity_classify(text), "natural: 合规 toxicity: 不合规"
     elif model == "finetuned mT5":
         return {"label": "unclear", "explanation": "暂不支持"}, description
     elif model == "Baidu API":
         return await get_text_censor(text), ""
     elif model == "Roberta":
-        return await roberta_toxicity_classify(text), "natural: 合规 toxity: 不合规"
+        return await roberta_toxicity_classify(text), "natural: 合规 toxicity: 不合规"
     else:
         return {"label": "unclear", "explanation": "暂不支持"}, ""
 
@@ -35,7 +35,7 @@ description = """
 - 合规(compliant)：不含有毒性内容。玩家之间的正常交流。
 - 色情(pornography)：发送色情评论或色情信息的链接。
 - 暴力(violent)：发送暴力言论。
-- 毒性(toxity)：发送辱骂性言论。
+- 毒性(toxicity)：发送辱骂性言论。
 - 政治(politics)：发送政治敏感言论。
 - 广告(advertising)：发送与游戏无关的宣传信息，以及相关社交媒体链接。
 - 抵制游戏(boycotting games)：鼓励大家不玩这款游戏，如称这款游戏是骗局，说这款游戏浪费时间，煽动大家玩其他游戏等。
@@ -50,7 +50,7 @@ model_descriptions = """
 - gpt3.5-turbo: 基于GPT3.5的文本分类模型, ICL + COT直接分类
 - finetuned mT5: 基于gpt3.5-turbo生成的COT数据, 使用mT5进行微调
 - Baidu API: 调用百度API进行文本检测
-- Roberta: 基于Roberta的简单文本二分类,只有natural和toxity两类
+- Roberta: 基于Roberta的简单文本二分类,只有natural和toxicity两类
 """
 
 demo = gr.Interface(

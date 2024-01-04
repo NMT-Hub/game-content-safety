@@ -2,10 +2,10 @@ SYSTEM_PROMPT = """
 Your role is to identify and categorize sensitive information in various forms of communication within a gaming environment. Your goal is to maintain a safe and respectful gaming community by flagging these types of content across different communication mediums like alliance chat, world chat, private messages, emails, game nicknames, avatars, alliance nicknames, and alliance announcements.
 
 Categories Divided: 
-- compliant: No toxity contents. Normal communication among players.
+- compliant: No toxicity contents. Normal communication among players.
 - pornography: Sending pornographic remarks or links to pornographic information.
 - violence: Sending violent remarks.
-- toxity: Sending abusive remarks.
+- toxicity: Sending abusive remarks.
 - politics: Sending politically sensitive remarks.
 - advertising: Sending promotional messages unrelated to the game, as well as related social media links.
 - boycotting games: Encouraging everyone not to play this game, such as saying that this game is a scam, saying that this game is a waste of time, inciting everyone to play other games, etc.
@@ -39,7 +39,7 @@ client = openai.AsyncAzureOpenAI(
     api_version="2023-07-01-preview"
 )
 
-async def label_toxity_texts(texts: List[str]) -> List[str]:
+async def label_toxicity_texts(texts: List[str]) -> List[str]:
     # Compliant, Incendiary Speech, Boycotting the Game, Washing People/Draining Traffic, Pornography, Violence, Politics, Advertising, Spreading Cheating Speech, Speech about Buying and Selling Resources, Speech about Buying and Selling Accounts, Speech about Recharging via Non-official Channels.
     # 合规、煽动性言论、抵制游戏、洗人/引流、色情、暴力、政治、广告、散布作弊言论、买卖资源言论、买卖账号言论、非官方渠道充值言论
     messages = [
@@ -56,7 +56,7 @@ async def label_toxity_texts(texts: List[str]) -> List[str]:
 9. 宝石便宜卖了,加v 线下私聊
 10. power leveling services, for account purchases message me privately
 11. Add me for an 80% discount on top-up vouchers 
-12. Why waste your time here? Everyone's moving to LOL
+12. Why waste your time here? Everyone's moving to Dota2
 13. 😠😠😠
 14. hlo
 15. go fuck yourself
@@ -79,7 +79,7 @@ async def label_toxity_texts(texts: List[str]) -> List[str]:
 12. Saying playing this game is a waste of time, inciting everyone to play LOL instead. Labeled as 'diverting players to other games'.
 13. Emoji. Labeled as 'compliant'.
 14. Greating. Labeled as 'compliant'.
-15. Abusive remarks. Labeled as 'toxity'.
+15. Abusive remarks. Labeled as 'toxicity'.
 """
         },
     {"role": "user", "content": "\n".join([f"{i+1}. {x}" for i, x in enumerate(texts)])},
@@ -119,13 +119,13 @@ async def label_toxity_texts(texts: List[str]) -> List[str]:
     return labels, texts, explanations
 
 
-async def label_toxity_text(text: str) -> str:
+async def label_toxicity_text(text: str) -> str:
     input_texts = [
     "k gimme a sec to see if magician got last battle thirst prize",
     "win did u finish all smuggling event?",
     text,
     ]
-    explanations, labels = await label_toxity_texts(input_texts)
+    explanations, labels = await label_toxicity_texts(input_texts)
     return {
         "label": labels[-1],
         "explanation": explanations[-1],
@@ -134,15 +134,23 @@ async def label_toxity_text(text: str) -> str:
 async def main():
     num = 0
     batch = []
-    batch_size = 20
+    batch_size = 1
 
     tasks = []
     # for line in tqdm(fileinput.input("./data/data.txt")):
     for line in tqdm(sys.stdin, total=312183):
+        if line.count("\t") == 2:
+            if line.startswith("UNK"):
+                line = line.split("\t")[1]
+            else:
+                print(line.strip())
+                continue
+
+        line = re.sub(r"\s+", " ", line.strip())
         num += 1
         batch.append(line.strip())
         if num % batch_size == 0:
-            task = label_toxity_texts(batch)
+            task = label_toxicity_texts(batch)
             tasks.append(task)
             batch = []
 
@@ -154,7 +162,7 @@ async def main():
             tasks = []
 
     if batch:
-        tasks.append(label_toxity_texts(batch))
+        tasks.append(label_toxicity_texts(batch))
         for task in asyncio.as_completed(tasks):
             labels, texts, explanations = await task
             for t, e, l in zip(texts, explanations, labels):
