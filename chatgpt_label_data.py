@@ -1,5 +1,5 @@
 SYSTEM_PROMPT = """
-Your role is to identify and categorize sensitive information in various forms of communication within a gaming environment. You will focus on detecting inappropriate comments, such as abusive language, racial discrimination, and references to inappropriate content like gambling or drugs. Additionally, you'll identify discussions about cheating, selling or buying game resources or accounts, unauthorized channel transactions, and soliciting for other games. Your goal is to maintain a safe and respectful gaming community by flagging these types of content across different communication mediums like alliance chat, world chat, private messages, emails, game nicknames, avatars, alliance nicknames, and alliance announcements.
+Your role is to identify and categorize sensitive information in various forms of communication within a gaming environment. Your goal is to maintain a safe and respectful gaming community by flagging these types of content across different communication mediums like alliance chat, world chat, private messages, emails, game nicknames, avatars, alliance nicknames, and alliance announcements.
 
 Categories Divided: 
 - compliant: No toxity contents. Normal communication among players.
@@ -23,6 +23,7 @@ import openai
 import re
 from tqdm import tqdm
 from typing import List
+import asyncio
 import fileinput
 
 from loguru import logger
@@ -56,7 +57,7 @@ async def label_toxity_texts(texts: List[str]) -> List[str]:
 10. power leveling services, for account purchases message me privately
 11. Add me for an 80% discount on top-up vouchers 
 12. Why waste your time here? Everyone's moving to LOL
-13. 🤩🤩🤩👌☕
+13. 😠😠😠
 14. hlo
 15. go fuck yourself
 """
@@ -83,10 +84,18 @@ async def label_toxity_texts(texts: List[str]) -> List[str]:
         },
     {"role": "user", "content": "\n".join([f"{i+1}. {x}" for i, x in enumerate(texts)])},
     ]
-    chat_completion_resp = await client.chat.completions.create(
-        messages=messages, timeout=30, model=DEPLOYMENT_ID, temperature=0.0,
-    )
+    try:
+        chat_completion_resp = await client.chat.completions.create(
+            messages=messages, timeout=30, model=DEPLOYMENT_ID, temperature=0.0,
+        )
+    except openai.BadRequestError as e:
+        logger.warning(f"ChatGPT failed: {e}")
+        return ["UNK"] * len(texts), texts, ["UNK"] * len(texts)
     response = chat_completion_resp.choices[0].message.content
+
+    if not response:
+        logger.warning(f"ChatGPT failed: {chat_completion_resp}")
+        return ["UNK"] * len(texts), texts, ["UNK"] * len(texts)
 
     if not response.endswith("\n"):
         response += "\n"
@@ -100,14 +109,14 @@ async def label_toxity_texts(texts: List[str]) -> List[str]:
         if m:
             labels.append(m.group(1))
         else:
-            labels.append("unclear")
+            labels.append("UNK")
 
     explanations = [re.sub(r"\d+\.", "", e).strip() for e in explanations]
 
     if len(labels) != len(texts) or len(explanations) != len(texts):
         logger.warning(f"ChatGPT failed: {response}")
-        return ["UNK"] * len(texts), ["UNK"] * len(texts)
-    return explanations, labels
+        return ["UNK"] * len(texts), texts, ["UNK"] * len(texts)
+    return labels, texts, explanations
 
 
 async def label_toxity_text(text: str) -> str:
@@ -127,21 +136,29 @@ async def main():
     batch = []
     batch_size = 20
 
+    tasks = []
     # for line in tqdm(fileinput.input("./data/data.txt")):
-    for line in tqdm(sys.stdin):
+    for line in tqdm(sys.stdin, total=312183):
         num += 1
         batch.append(line.strip())
         if num % batch_size == 0:
-            explanations, labels = await label_toxity_texts(batch)
-            for t, e, l in zip(batch, explanations, labels):
-                print(f"{l}\t{t}\t{e}")
+            task = label_toxity_texts(batch)
+            tasks.append(task)
             batch = []
 
+        if len(tasks) >= 10:
+            for task in asyncio.as_completed(tasks):
+                labels, texts, explanations = await task
+                for t, e, l in zip(texts, explanations, labels):
+                    print(f"{l}\t{t}\t{e}")
+            tasks = []
+
     if batch:
-        explanations, labels  = await label_toxity_texts(batch)
-        for t, e, l in zip(batch, explanations, labels):
-            print(f"{l}\t{t}\t{e}")
+        tasks.append(label_toxity_texts(batch))
+        for task in asyncio.as_completed(tasks):
+            labels, texts, explanations = await task
+            for t, e, l in zip(texts, explanations, labels):
+                print(f"{l}\t{t}\t{e}")
         
 if __name__ == "__main__":
-    import asyncio
     asyncio.run(main())
