@@ -125,7 +125,7 @@ async def label_toxicity_text(text: str) -> str:
     "win did u finish all smuggling event?",
     text,
     ]
-    explanations, labels = await label_toxicity_texts(input_texts)
+    labels, _, explanations = await label_toxicity_texts(input_texts)
     return {
         "label": labels[-1],
         "explanation": explanations[-1],

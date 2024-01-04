@@ -6,26 +6,24 @@ from roberta import roberta_toxicity_classify
 
 
 async def greet(text, model, *args, **kwargs):
-    if model == "gpt3.5-turbo":
+    if model == "IFUN GPT3.5 Version":
         try:
             return await label_toxicity_text(text), description
         except openai.BadRequestError:
             return await roberta_toxicity_classify(text), "natural: 合规 toxicity: 不合规"
-    elif model == "finetuned mT5":
+    elif model == "IFUN Finetuned mT5 Version":
         return {"label": "unclear", "explanation": "暂不支持"}, description
     elif model == "Baidu API":
         return await get_text_censor(text), ""
-    elif model == "Roberta":
-        return await roberta_toxicity_classify(text), "natural: 合规 toxicity: 不合规"
     else:
         return {"label": "unclear", "explanation": "暂不支持"}, ""
 
 
 text_input = gr.Textbox(placeholder="Please input your text here.", label="输入待检测文本")
 action_buttons = gr.Radio(
-    ["gpt3.5-turbo", "finetuned mT5", "Baidu API", "Roberta"],
+    ["IFUN GPT3.5 Version", "Baidu API", "IFUN Finetuned mT5 Version"],
     label="可选模型",
-    value="gpt3.5-turbo",
+    value="IFUN GPT3.5 Version",
 )
 json_output = gr.JSON(label="检测结果")
 
@@ -47,10 +45,9 @@ description = """
 """
 
 model_descriptions = """
-- gpt3.5-turbo: 基于GPT3.5的文本分类模型, ICL + COT直接分类
-- finetuned mT5: 基于gpt3.5-turbo生成的COT数据, 使用mT5进行微调
+- IFUN GPT3.5 Version: 基于GPT3.5的文本分类模型, ICL + COT Prompting分类
+- IFUN Finetuned mT5 Version: 基于gpt3.5-turbo生成的COT数据, 使用mT5进行微调 (正在训练中...)
 - Baidu API: 调用百度API进行文本检测
-- Roberta: 基于Roberta的简单文本二分类,只有natural和toxicity两类
 """
 
 demo = gr.Interface(
