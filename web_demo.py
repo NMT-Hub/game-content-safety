@@ -3,6 +3,7 @@ import gradio as gr
 from chatgpt_label_data import label_toxicity_text
 from baidu import get_text_censor
 from roberta import roberta_toxicity_classify
+from eval_xlm import predict
 
 
 async def greet(text, model, *args, **kwargs):
@@ -11,8 +12,8 @@ async def greet(text, model, *args, **kwargs):
             return await label_toxicity_text(text), description
         except openai.BadRequestError:
             return await roberta_toxicity_classify(text), "natural: 合规 toxicity: 不合规"
-    elif model == "IFUN Finetuned mT5 Version":
-        return {"label": "unclear", "explanation": "暂不支持"}, description
+    elif model == "IFUN Finetuned xlm-roberta Version":
+        return predict(text), description
     elif model == "Baidu API":
         return await get_text_censor(text), ""
     else:

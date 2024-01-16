@@ -1,4 +1,8 @@
+from typing import List, Union
+
+import torch
 import transformers
+
 from prepare_training_data import avaliable_labels
 
 model_path = "./models/xlm-roberta-base-finetuned/"
@@ -17,8 +21,7 @@ model = transformers.XLMRobertaForSequenceClassification.from_pretrained(
     local_files_only=True,
 )
 
-# infer
-data = [
+test_texts = [
     "boss u motherfucker",
     "草你妈",
     "搏一搏单车变摩托，赶紧来吧，可直接加微f-fak-fas",
@@ -27,6 +30,42 @@ data = [
     "法克油",
     "who is that? new porn star?",
     "宝石便宜卖了,加v 线下私聊",
-    'Thằng này to hơn tý này Đậu',
+    "Thằng này to hơn tý này Đậu",
 ]
 
+
+model.eval()
+
+
+def predict(text: Union[str, List[str]]):
+    if isinstance(text, str):
+        batch = False
+        text = [text]
+    else:
+        batch = True
+
+    inputs = tokenizer(
+        text, return_tensors="pt", padding=True, truncation=True, max_length=128
+    )
+    with torch.no_grad():
+        outputs = model(**inputs)
+    logits = outputs.logits
+    predictions = torch.argmax(logits, dim=-1)
+
+    result = []
+    for text, prediction in zip(test_texts, predictions):
+        result.append(avaliable_labels[prediction])
+
+
+    if batch:
+        return result
+
+    else:
+        return result[0]
+
+
+if __name__ == "__main__":
+    predictions = predict(test_texts)
+
+    for text, prediction in zip(test_texts, predictions):
+        print(text, "\t", prediction)
