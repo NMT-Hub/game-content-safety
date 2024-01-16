@@ -50,13 +50,13 @@ def main():
     os.remove("./datasets/test.tsv")
     os.remove("./datasets/train.tsv")
 
-    # write header
-    with open("./datasets/dev.tsv", "a") as f:
-        f.write("text\tlabel\n")
-    with open("./datasets/test.tsv", "a") as f:
-        f.write("text\tlabel\n")
-    with open("./datasets/train.tsv", "a") as f:
-        f.write("text\tlabel\n")
+    # # write header
+    # with open("./datasets/dev.tsv", "a") as f:
+    #     f.write("text\tlabel\n")
+    # with open("./datasets/test.tsv", "a") as f:
+    #     f.write("text\tlabel\n")
+    # with open("./datasets/train.tsv", "a") as f:
+    #     f.write("text\tlabel\n")
 
     # shuffle and extract 10 sample each label as dev and test set respectively.
     # remaining as training set.
@@ -66,17 +66,17 @@ def main():
         label_id = str(avaliable_labels.index(label))
         with open("./datasets/dev.tsv", "a") as f:
             for line in label_2_text[label][:10]:
-                f.write(line + "\t" + label + "\n")
+                f.write(line + "\t" + label_id + "\n")
         with open("./datasets/test.tsv", "a") as f:
             for line in label_2_text[label][10:20]:
-                f.write(line + "\t" + label + "\n")
+                f.write(line + "\t" + label_id + "\n")
         with open("./datasets/train.tsv", "a") as f:
             if label == "compliant":
                 for line in label_2_text[label][20:20000]:
-                    f.write(line + "\t" + label + "\n")
+                    f.write(line + "\t" + label_id + "\n")
             else:
                 for line in label_2_text[label][20:]:
-                    f.write(line + "\t" + label + "\n")
+                    f.write(line + "\t" + label_id + "\n")
 
     # shuffle training set
     subprocess.call(
