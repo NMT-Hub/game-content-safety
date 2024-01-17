@@ -16,13 +16,19 @@ async def greet(text, model, *args, **kwargs):
         return predict(text), description
     elif model == "Baidu API":
         return await get_text_censor(text), ""
+    elif model == "All In One":
+        return {
+            "IFUN GPT3.5 Version": await label_toxicity_text(text),
+            "IFUN Finetuned xlm-roberta Version": predict(text),
+            "Baidu API": await get_text_censor(text),
+        }, ""
     else:
         return {"label": "unclear", "explanation": "暂不支持"}, ""
 
 
 text_input = gr.Textbox(placeholder="Please input your text here.", label="输入待检测文本")
 action_buttons = gr.Radio(
-    ["IFUN GPT3.5 Version", "Baidu API", "IFUN Finetuned mT5 Version"],
+    ["IFUN GPT3.5 Version", "Baidu API", "IFUN Finetuned xlm-roberta Version", "All In One"],
     label="可选模型",
     value="IFUN GPT3.5 Version",
 )
@@ -45,10 +51,14 @@ description = """
 - 吸引玩家至其他游戏(diverting players to other games)：涉及邀请参加其他游戏，邀请玩家加入其他游戏（出于重定向玩家的目的）。
 """
 
+
+
+
 model_descriptions = """
 - IFUN GPT3.5 Version: 基于GPT3.5的文本分类模型, ICL + COT Prompting分类
-- IFUN Finetuned mT5 Version: 基于gpt3.5-turbo生成的COT数据, 使用mT5进行微调 (正在训练中...)
 - Baidu API: 调用百度API进行文本检测
+- IFUN Finetuned xlm-roberta Version: 基于gpt3.5-turbo生成的COT数据, 使用xlm-roberta进行微调
+- All In One: 同时输出所有模型的结果，便于对比效果
 """
 
 demo = gr.Interface(

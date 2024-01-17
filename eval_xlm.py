@@ -1,9 +1,10 @@
 from typing import List, Union
 
 import torch
+import torch.nn.functional as F
 import transformers
 
-from prepare_training_data import avaliable_labels
+from prepare_training_data import avaliable_labels, label_2_exp
 
 model_path = "./models/xlm-roberta-base-finetuned/"
 
@@ -50,7 +51,8 @@ def predict(text: Union[str, List[str]]):
     with torch.no_grad():
         outputs = model(**inputs)
     logits = outputs.logits
-    predictions = torch.argmax(logits, dim=-1)
+    predictions = torch.argmax(logits, dim=-1).cpu().numpy().tolist()
+    probs = F.softmax(logits, dim=-1).cpu().numpy().tolist()
 
     result = []
     for text, prediction in zip(test_texts, predictions):
@@ -61,7 +63,11 @@ def predict(text: Union[str, List[str]]):
         return result
 
     else:
-        return result[0]
+        return {
+            "label": result[0],
+            "explanation": label_2_exp.get(result[0], ""),
+            "prob": probs[0][predictions[0]]
+        }
 
 
 if __name__ == "__main__":
