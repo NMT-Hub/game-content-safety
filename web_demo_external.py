@@ -1,20 +1,31 @@
 import openai
 import gradio as gr
 from chatgpt_label_data import label_toxicity_text
-from roberta import roberta_toxicity_classify
 from eval_xlm import predict
+from prepare_training_data import avaliable_labels
 
 
 async def greet(text, model, *args, **kwargs):
     if model == "精准模式":
         try:
-            return await label_toxicity_text(text), description
+            response = await label_toxicity_text(text)
+            explanation = description
         except openai.BadRequestError:
-            return await roberta_toxicity_classify(text), "natural: 合规 toxicity: 不合规"
+            response = predict(text)
+            explanation = description
     elif model == "快速模式":
-        return predict(text), description
+        response = predict(text)
+        explanation = description
     else:
-        return {"label": "unclear", "explanation": "暂不支持"}, ""
+        raise ValueError("Invalid model type")
+
+    if response["label"] not in avaliable_labels:
+        response["label"] = "compliant"
+    # ROM本身是黑手党元素，暴力标签不算违规
+    if response["label"] == "violence":
+        response["label"] = "compliant"
+
+    return response, explanation
 
 
 text_input = gr.Textbox(placeholder="Please input your text here.", label="输入待检测文本")
