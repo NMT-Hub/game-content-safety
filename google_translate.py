@@ -1,6 +1,8 @@
+import asyncio
 import functools
 import os
 import re
+import sys
 from typing import List
 
 import httpx
@@ -21,28 +23,46 @@ def get_supported_languages() -> List[str]:
     return [d["language"] for d in data["data"]["languages"]]
 
 
-async def batch_translate_texts(texts: List[str], source_language_code: str, target_language_code: str) -> List[str]:
+async def batch_translate_texts(
+    texts: List[str], source_language_code: str, target_language_code: str
+) -> List[str]:
     supported_languages = get_supported_languages()
     if target_language_code not in supported_languages:
-        target_language_code = langcodes.closest_supported_match(target_language_code, supported_languages)
+        target_language_code = langcodes.closest_supported_match(
+            target_language_code, supported_languages
+        )
         if not target_language_code:
-            raise ValueError(f"Language code {target_language_code} is not supported by Google Translate.")
+            raise ValueError(
+                f"Language code {target_language_code} is not supported by Google Translate."
+            )
 
     if source_language_code not in supported_languages:
-        source_language_code = langcodes.closest_supported_match(source_language_code, supported_languages)
+        source_language_code = langcodes.closest_supported_match(
+            source_language_code, supported_languages
+        )
         if not source_language_code:
-            raise ValueError(f"Language code {source_language_code} is not supported by Google Translate.")
+            raise ValueError(
+                f"Language code {source_language_code} is not supported by Google Translate."
+            )
 
     if source_language_code == target_language_code:
         return texts
 
     translations = []
-    for chunk in chunked(texts, 128):  # Google Translate API has a limit of 128 texts per request
-        payload = {"q": chunk, "target": target_language_code, "source": source_language_code}
+    for chunk in chunked(
+        texts, 128
+    ):  # Google Translate API has a limit of 128 texts per request
+        payload = {
+            "q": chunk,
+            "target": target_language_code,
+            "source": source_language_code,
+        }
         async with httpx.AsyncClient() as client:
             response = await client.post(URL, json=payload)
             data = response.json()
-            translations.extend([d["translatedText"] for d in data["data"]["translations"]])
+            translations.extend(
+                [d["translatedText"] for d in data["data"]["translations"]]
+            )
 
     return translations
 
@@ -50,7 +70,9 @@ async def batch_translate_texts(texts: List[str], source_language_code: str, tar
 async def translate_text(text, source_language_code, target_language_code):
     texts = re.split(r"(\n+)", text)
     input_texts = [text for text in texts if text.strip()]
-    translatons = await batch_translate_texts(input_texts, source_language_code, target_language_code)
+    translatons = await batch_translate_texts(
+        input_texts, source_language_code, target_language_code
+    )
 
     output_texts = []
     for text in texts:
@@ -60,3 +82,6 @@ async def translate_text(text, source_language_code, target_language_code):
             output_texts.append(text)
 
     return "".join(output_texts)
+
+
+if __name__ == "__main__":
