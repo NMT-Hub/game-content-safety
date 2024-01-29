@@ -59,11 +59,14 @@ def main():
         logging.warning(
             "Label: %s, number of samples: %d", label, len(label_2_text[label])
         )
-
+        
     # remove old data
-    os.remove("./datasets/dev.tsv")
-    os.remove("./datasets/test.tsv")
-    os.remove("./datasets/train.tsv")
+    if os.path.exists("./datasets/dev.tsv"):
+        os.remove("./datasets/dev.tsv")
+    if os.path.exists("./datasets/test.tsv"):
+        os.remove("./datasets/test.tsv")
+    if os.path.exists("./datasets/train.tsv"):
+        os.remove("./datasets/train.tsv")
 
     # shuffle and extract 10 sample each label as dev and test set respectively.
     # remaining as training set.

@@ -82,6 +82,3 @@ async def translate_text(text, source_language_code, target_language_code):
             output_texts.append(text)
 
     return "".join(output_texts)
-
-
-if __name__ == "__main__":
