@@ -82,3 +82,17 @@ async def translate_text(text, source_language_code, target_language_code):
             output_texts.append(text)
 
     return "".join(output_texts)
+
+
+if __name__ == "__main__":
+    source_language_code = sys.argv[1]
+    target_language_code = sys.argv[2]
+
+    for batch in chunked(sys.stdin, 20):
+        batch = [line.strip() for line in batch]
+        results = asyncio.run(
+            batch_translate_texts(batch, source_language_code, target_language_code)
+        )
+        for result in results:
+            print(result)
+
