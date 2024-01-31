@@ -27,6 +27,7 @@ import asyncio
 import fileinput
 
 from loguru import logger
+from prepare_training_data import avaliable_labels
 
 AZURE_OPENAI_API_KEY="4d9ec5a0a2d94d428cae2636e8e609de"
 AZURE_OPENAI_ENDPOINT="https://ifunazure.openai.azure.com/"
@@ -126,6 +127,10 @@ async def label_toxicity_text(text: str) -> str:
     text,
     ]
     labels, _, explanations = await label_toxicity_texts(input_texts)
+    label = labels[-1]
+
+    if label not in avaliable_labels:
+        label = "compliant"
     return {
         "label": labels[-1],
         "explanation": explanations[-1],

@@ -38,6 +38,10 @@ model.eval()
 
 
 def hardcoding_fix_result(text: str, label: str, prob: float):
+    if label == "politics" and prob < 0.9:
+        return "compliant"
+    if label == "violence":
+        return "compliant"
     return label
 
 
