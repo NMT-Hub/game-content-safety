@@ -32,10 +32,13 @@ test_texts = [
     "who is that? new porn star?",
     "宝石便宜卖了,加v 线下私聊",
     "Thằng này to hơn tý này Đậu",
-]
-
+] + [line.strip() for line in open("./test_set.txt").readlines()]
 
 model.eval()
+
+
+def hardcoding_fix_result(text: str, label: str, prob: float):
+    return label
 
 
 def predict(text: Union[str, List[str]]):
@@ -55,12 +58,15 @@ def predict(text: Union[str, List[str]]):
     probs = F.softmax(logits, dim=-1).cpu().numpy().tolist()
 
     result = []
-    for text, prediction in zip(test_texts, predictions):
+    for _, prediction in zip(test_texts, predictions):
         result.append(avaliable_labels[prediction])
 
 
+    label_probs = [probs[i][predictions[i]] for i in range(len(result))]
+    result = [hardcoding_fix_result(text, label, prob) for text, label, prob in zip(text, result, label_probs)]
+
     if batch:
-        return result
+        return result, [probs[i][predictions[i]] for i in range(len(result))]
 
     else:
         return {
@@ -71,7 +77,7 @@ def predict(text: Union[str, List[str]]):
 
 
 if __name__ == "__main__":
-    predictions = predict(test_texts)
+    predictions, probs = predict(test_texts)
 
-    for text, prediction in zip(test_texts, predictions):
-        print(text, "\t", prediction)
+    for text, prediction, prob in zip(test_texts, predictions, probs):
+        print(text, "\t", prediction, "\t", prob)
