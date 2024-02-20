@@ -28,6 +28,7 @@ import fileinput
 
 from loguru import logger
 from prepare_training_data import avaliable_labels
+from google_translate import translate_text
 
 AZURE_OPENAI_API_KEY="4d9ec5a0a2d94d428cae2636e8e609de"
 AZURE_OPENAI_ENDPOINT="https://ifunazure.openai.azure.com/"
@@ -91,12 +92,12 @@ async def label_toxicity_texts(texts: List[str]) -> List[str]:
         )
     except openai.BadRequestError as e:
         logger.warning(f"ChatGPT failed: {e}")
-        return ["UNK"] * len(texts), texts, ["UNK"] * len(texts)
+        return ["toxicity"] * len(texts), texts, ["toxicity"] * len(texts)
     response = chat_completion_resp.choices[0].message.content
 
     if not response:
         logger.warning(f"ChatGPT failed: {chat_completion_resp}")
-        return ["UNK"] * len(texts), texts, ["UNK"] * len(texts)
+        return ["toxicity"] * len(texts), texts, ["toxicity"] * len(texts)
 
     if not response.endswith("\n"):
         response += "\n"
@@ -134,6 +135,9 @@ async def label_toxicity_text(text: str) -> str:
     return {
         "label": labels[-1],
         "explanation": explanations[-1],
+        "input_text": text,
+        "input_text_translation": await translate_text(text, "auto", "zh"),
+        "explanation_translation": await translate_text(explanations[-1], "auto", "zh"),
     }
 
 async def main():

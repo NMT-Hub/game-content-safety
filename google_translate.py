@@ -15,6 +15,13 @@ GOOGLE_API_KEY = "AIzaSyDMx3Lf9EGMyve9EArG0IJ__FkJYJ5MPBQ"
 URL = f"https://translation.googleapis.com/language/translate/v2?key={GOOGLE_API_KEY}"
 GOOGLE_SUPPORTED_LANGUAGES = None
 
+if os.getenv("GOOGLE_HTTPS_PROXY"):
+    HTTPS_PROXY = {
+        "https://": os.getenv("GOOGLE_HTTPS_PROXY")
+    }
+else:
+    HTTPS_PROXY = None
+
 
 @functools.cache
 def get_supported_languages() -> List[str]:
@@ -25,7 +32,7 @@ def get_supported_languages() -> List[str]:
         # Get the supported languages from Google
         url = "https://translation.googleapis.com/language/translate/v2/languages"
         params = {"key": GOOGLE_API_KEY}
-        response = httpx.get(url, params=params)
+        response = httpx.get(url, params=params, proxies=HTTPS_PROXY)
         data = response.json()
         GOOGLE_SUPPORTED_LANGUAGES = [d["language"] for d in data["data"]["languages"]]
         return GOOGLE_SUPPORTED_LANGUAGES
@@ -74,7 +81,7 @@ async def batch_translate_texts(
                 "q": chunk,
                 "target": target_language_code,
             }
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(proxies=HTTPS_PROXY) as client:
             response = await client.post(URL, json=payload)
             data = response.json()
             translations.extend(

@@ -4,6 +4,7 @@ from chatgpt_label_data import label_toxicity_text
 from baidu import get_text_censor
 from roberta import roberta_toxicity_classify
 from eval_xlm import predict
+from microsoft import analyze_text_async
 
 
 async def greet(text, model, *args, **kwargs):
@@ -16,11 +17,14 @@ async def greet(text, model, *args, **kwargs):
         return predict(text), description
     elif model == "Baidu API":
         return await get_text_censor(text), ""
+    elif model == "Microsoft API":
+        return await analyze_text_async(text), ""
     elif model == "All In One":
         return {
             "IFUN GPT3.5 Version": await label_toxicity_text(text),
             "IFUN Finetuned xlm-roberta Version": predict(text),
             "Baidu API": await get_text_censor(text),
+            "Microsoft API": await analyze_text_async(text),
         }, ""
     else:
         return {"label": "unclear", "explanation": "暂不支持"}, ""
@@ -28,7 +32,7 @@ async def greet(text, model, *args, **kwargs):
 
 text_input = gr.Textbox(placeholder="Please input your text here.", label="输入待检测文本")
 action_buttons = gr.Radio(
-    ["IFUN GPT3.5 Version", "Baidu API", "IFUN Finetuned xlm-roberta Version", "All In One"],
+    ["IFUN GPT3.5 Version", "Baidu API", "IFUN Finetuned xlm-roberta Version", "Microsoft API", "All In One"],
     label="可选模型",
     value="IFUN GPT3.5 Version",
 )
@@ -58,6 +62,7 @@ model_descriptions = """
 - IFUN GPT3.5 Version: 基于GPT3.5的文本分类模型, ICL + COT Prompting分类
 - Baidu API: 调用百度API进行文本检测
 - IFUN Finetuned xlm-roberta Version: 基于gpt3.5-turbo生成的COT数据, 使用xlm-roberta进行微调
+- Microsoft API: 调用微软API进行文本检测
 - All In One: 同时输出所有模型的结果，便于对比效果
 """
 

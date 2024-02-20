@@ -31,7 +31,8 @@ async def roberta_toxicity_classify(text):
         lang_pred = lang_id_model.predict(text)
     if lang_pred[0][0] != '__label__en':
         # google translate
-        text = await translate_text(text, lang_pred[0][0][9:], 'en')
+        # text = await translate_text(text, lang_pred[0][0][9:], 'en')
+        text = text
 
     with torch.no_grad():
         # prepare the input

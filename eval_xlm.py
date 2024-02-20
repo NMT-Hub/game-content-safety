@@ -76,7 +76,7 @@ def predict(text: Union[str, List[str]]):
         return {
             "label": result[0],
             "explanation": label_2_exp.get(result[0], ""),
-            "prob": probs[0][predictions[0]]
+            # "prob": probs[0][predictions[0]]
         }
 
 
