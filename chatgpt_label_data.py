@@ -136,8 +136,8 @@ async def label_toxicity_text(text: str) -> str:
         "label": labels[-1],
         "explanation": explanations[-1],
         "input_text": text,
-        "input_text_translation": await translate_text(text, "auto", "zh"),
-        "explanation_translation": await translate_text(explanations[-1], "auto", "zh"),
+        # "input_text_translation": await translate_text(text, "auto", "zh"),
+        # "explanation_translation": await translate_text(explanations[-1], "auto", "zh"),
     }
 
 async def main():
