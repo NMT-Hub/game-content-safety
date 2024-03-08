@@ -1,11 +1,29 @@
 # train xlm-roberta model
 import evaluate
+import torch
 from transformers import (AutoConfig, AutoModelForSequenceClassification,
                           AutoTokenizer, Trainer, TrainingArguments,
                           default_data_collator)
 
 from datasets import load_dataset
 from prepare_training_data import avaliable_labels
+
+
+class CustomTrainer(Trainer):
+    def compute_loss(self, model, inputs, return_outputs=False):
+        labels = inputs.get("labels")
+        # forward pass
+        outputs = model(**inputs)
+        logits = outputs.get("logits")
+        # compute custom loss
+        loss_fct = torch.nn.CrossEntropyLoss(
+            weight=torch.tensor(
+                [0.1, 0.3, 0.1, 0.3 0.1, 0.3, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+            ).to(logits.device)
+        )
+        loss = loss_fct(logits.view(-1, self.model.config.num_labels), labels.view(-1))
+        return (loss, outputs) if return_outputs else loss
+
 
 # load model and tokenizer
 config = AutoConfig.from_pretrained(
@@ -27,7 +45,13 @@ model = AutoModelForSequenceClassification.from_pretrained(
 
 # load datasets
 def tokenize_function(examples):
-    input_ = tokenizer(examples["text"], truncation=True, padding="max_length", max_length=512)
+    input_ = tokenizer(
+        examples["text"],
+        truncation=True,
+        padding="max_length",
+        max_length=512,
+        return_tensors="pt",
+    )
     return input_
 
 
@@ -41,6 +65,11 @@ train_dataset = load_dataset(
     delimiter="\t",
     column_names=["text", "label"],
     cache_dir="./datasets/cache",
+)
+
+# filter out None text and label
+train_dataset = train_dataset.filter(
+    lambda example: example["text"] is not None and example["label"] is not None
 )
 
 
@@ -58,7 +87,7 @@ def compute_metrics(eval_pred):
 
 # training arguments
 training_args = TrainingArguments(
-    output_dir="./results",
+    output_dir="./results_v2",
     num_train_epochs=5,
     per_device_train_batch_size=96,
     per_device_eval_batch_size=96,
@@ -71,10 +100,11 @@ training_args = TrainingArguments(
     load_best_model_at_end=True,
     metric_for_best_model="accuracy",
     greater_is_better=True,
+    bf16=True,
 )
 
 # Trainer
-trainer = Trainer(
+trainer = CustomTrainer(
     model=model,
     args=training_args,
     train_dataset=tokenized_datasets["train"],
@@ -91,4 +121,4 @@ trainer.train()
 trainer.evaluate()
 
 # save model
-trainer.save_model("./models/xlm-roberta-base-finetuned")
+trainer.save_model("./models/xlm-roberta-base-finetuned-v2")

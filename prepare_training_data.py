@@ -74,9 +74,33 @@ def main():
     for label in avaliable_labels:
         random.shuffle(label_2_text[label])
         label_id = str(avaliable_labels.index(label))
-        with open(f"./datasets/{label}.tsv", "a") as f:
+        with open(f"./datasets/{label}.tsv", "w") as f:
             for line in label_2_text[label]:
+                # f.write(line + "\t" + label_id + "\n")
+                f.write(line + "\n")
+                
+    for label in avaliable_labels:
+        random.shuffle(label_2_text[label])
+        label_id = str(avaliable_labels.index(label))
+        with open("./datasets/dev.tsv", "a") as f:
+            for line in label_2_text[label][:10]:
                 f.write(line + "\t" + label_id + "\n")
+        with open("./datasets/test.tsv", "a") as f:
+            for line in label_2_text[label][10:20]:
+                f.write(line + "\t" + label_id + "\n")
+        with open("./datasets/train.tsv", "a") as f:
+            if label == "compliant":
+                for line in label_2_text[label][20:]:
+                    f.write(line + "\t" + label_id + "\n")
+            else:
+                for line in label_2_text[label][20:]:
+                    f.write(line + "\t" + label_id + "\n")
+
+    # shuffle training set
+    subprocess.call(
+        "shuf ./datasets/train.tsv > ./datasets/train.tsv.tmp && mv ./datasets/train.tsv.tmp ./datasets/train.tsv",
+        shell=True,
+    )
 
 
 if __name__ == "__main__":
